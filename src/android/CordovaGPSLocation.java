@@ -179,18 +179,28 @@ public class CordovaGPSLocation extends CordovaPlugin {
 	}
 
 
+	private boolean validLocation(Location location, int maximumAge){
+		return (location != null && (System.currentTimeMillis() - location.getTime()) <= maximumAge);
+	}
+
+
 	private void getLastLocation(JSONArray args, CallbackContext callbackContext) {
 		int maximumAge;
 		try {
 			maximumAge = args.getInt(0);
 		} catch (JSONException e) {
 			e.printStackTrace();
-			maximumAge = 0;
+			maximumAge = 1000;
 		}
-		Location last = mLocationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+
 		// Check if we can use lastKnownLocation to get a quick reading and use
 		// less battery
-		if (last != null && (System.currentTimeMillis() - last.getTime()) <= maximumAge) {
+		Location last = mLocationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+		if ( !validLocation(last, maximumAge) ){
+			last = mLocationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+		}
+
+		if ( validLocation(last, maximumAge) ) {
 			PluginResult result = new PluginResult(PluginResult.Status.OK, returnLocationJSON(last));
 			callbackContext.sendPluginResult(result);
 		} else {

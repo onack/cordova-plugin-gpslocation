@@ -45,6 +45,7 @@ public class CordovaLocationListener implements LocationListener {
 	private List<CallbackContext> mCallbacks = new ArrayList<CallbackContext>();
 	private Timer mTimer = null;
 	private String TAG;
+	private Boolean ignoringNetworkLocations = false;
 
 	public CordovaLocationListener(CordovaGPSLocation owner, String tag) {
 		mOwner = owner;
@@ -54,13 +55,18 @@ public class CordovaLocationListener implements LocationListener {
 	@Override
 	public void onLocationChanged(Location location) {
 		Log.d(TAG, "The location has been updated!");
-		win(location);
+		if ((location.getProvider() == LocationManager.GPS_PROVIDER) || !ignoringNetworkLocations) {
+			if (location.getProvider() == LocationManager.GPS_PROVIDER) {
+				ignoringNetworkLocations = true;
+			}
+			win(location);
+		}
 	}
 
 	@Override
 	public void onProviderDisabled(String provider) {
-		if (LocationManager.GPS_PROVIDER.equals(provider)) {
-			fail(POSITION_UNAVAILABLE, "GPS provider has been disabled.");
+		if (!mOwner.getLocationManager().isProviderEnabled(LocationManager.GPS_PROVIDER) && !mOwner.getLocationManager().isProviderEnabled(LocationManager.NETWORK_PROVIDER)){
+			fail(POSITION_UNAVAILABLE, "All locations providers are disabled.");
 		}
 	}
 
@@ -139,6 +145,7 @@ public class CordovaLocationListener implements LocationListener {
 	}
 
 	private void start() {
+		mOwner.getLocationManager().requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, this);
 		mOwner.getLocationManager().requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
 	}
 
