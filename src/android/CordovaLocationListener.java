@@ -55,8 +55,8 @@ public class CordovaLocationListener implements LocationListener {
 	@Override
 	public void onLocationChanged(Location location) {
 		Log.d(TAG, "The location has been updated!");
-		if ((location.getProvider() == LocationManager.GPS_PROVIDER) || !ignoringNetworkLocations) {
-			if (location.getProvider() == LocationManager.GPS_PROVIDER) {
+		if ((location.getProvider().equals(LocationManager.GPS_PROVIDER) ) || !ignoringNetworkLocations) {
+			if (location.getProvider().equals(LocationManager.GPS_PROVIDER)  ) {
 				ignoringNetworkLocations = true;
 			}
 			win(location);
