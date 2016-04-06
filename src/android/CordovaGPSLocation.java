@@ -76,8 +76,8 @@ public class CordovaGPSLocation extends CordovaPlugin {
 			return true;
 		}
 
-		if (isGPSdisabled()) {
-			fail(CordovaLocationListener.POSITION_UNAVAILABLE, "GPS is disabled on this device.", callbackContext, false);
+		if (isGPSdisabled() && isNetworkDisabled() ) {
+			fail(CordovaLocationListener.POSITION_UNAVAILABLE, "GPS and Network are disabled on this device.", callbackContext, false);
 			return true;
 		}
 
@@ -119,6 +119,7 @@ public class CordovaGPSLocation extends CordovaPlugin {
 							: null) : null));
 			o.put("velocity", loc.getSpeed());
 			o.put("timestamp", loc.getTime());
+			o.put("provider", loc.getProvider());
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
@@ -176,6 +177,18 @@ public class CordovaGPSLocation extends CordovaPlugin {
 		}
 
 		return !gps_enabled;
+	}
+
+	private boolean isNetworkDisabled() {
+		boolean network_enabled;
+		try {
+			network_enabled = mLocationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			network_enabled = false;
+		}
+
+		return !network_enabled;
 	}
 
 

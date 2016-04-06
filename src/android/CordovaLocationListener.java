@@ -57,7 +57,11 @@ public class CordovaLocationListener implements LocationListener {
 		Log.d(TAG, "The location has been updated!");
 		if ((location.getProvider().equals(LocationManager.GPS_PROVIDER) ) || !ignoringNetworkLocations) {
 			if (location.getProvider().equals(LocationManager.GPS_PROVIDER)  ) {
+				Log.d(TAG, "Got a GPS location");
+				// Once we got a GPS location we dont care anymore of Network locations
 				ignoringNetworkLocations = true;
+			} else {
+				Log.d(TAG, "Got a NETWORK location");
 			}
 			win(location);
 		}
@@ -95,6 +99,11 @@ public class CordovaLocationListener implements LocationListener {
 		}
 	}
 
+	public void listenToNetworkLocations(CallbackContext callbackContext) {
+		ignoringNetworkLocations = false;
+		callbackContext.success("Listening for network locations until a GPS location is received");
+	}
+
 	public void clearWatch(String timerId) {
 		if (watches.containsKey(timerId)) {
 			watches.remove(timerId);
@@ -110,6 +119,7 @@ public class CordovaLocationListener implements LocationListener {
 
 	protected void fail(int code, String message) {
 		cancelTimer();
+		ignoringNetworkLocations = false;
 
 		for (CallbackContext callbackContext : mCallbacks) {
 			mOwner.fail(code, message, callbackContext, false);
