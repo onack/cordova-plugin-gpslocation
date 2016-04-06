@@ -76,8 +76,8 @@ public class CordovaGPSLocation extends CordovaPlugin {
 			return true;
 		}
 
-		if (isGPSdisabled()) {
-			fail(CordovaLocationListener.POSITION_UNAVAILABLE, "GPS is disabled on this device.", callbackContext, false);
+		if (isGPSdisabled() && isNetworkDisabled() ) {
+			fail(CordovaLocationListener.POSITION_UNAVAILABLE, "GPS and Network are disabled on this device.", callbackContext, false);
 			return true;
 		}
 
@@ -119,6 +119,7 @@ public class CordovaGPSLocation extends CordovaPlugin {
 							: null) : null));
 			o.put("velocity", loc.getSpeed());
 			o.put("timestamp", loc.getTime());
+			o.put("provider", loc.getProvider());
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
@@ -178,6 +179,23 @@ public class CordovaGPSLocation extends CordovaPlugin {
 		return !gps_enabled;
 	}
 
+	private boolean isNetworkDisabled() {
+		boolean network_enabled;
+		try {
+			network_enabled = mLocationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			network_enabled = false;
+		}
+
+		return !network_enabled;
+	}
+
+
+	private boolean validLocation(Location location, int maximumAge){
+		return (location != null && (System.currentTimeMillis() - location.getTime()) <= maximumAge);
+	}
+
 
 	private void getLastLocation(JSONArray args, CallbackContext callbackContext) {
 		int maximumAge;
@@ -185,12 +203,17 @@ public class CordovaGPSLocation extends CordovaPlugin {
 			maximumAge = args.getInt(0);
 		} catch (JSONException e) {
 			e.printStackTrace();
-			maximumAge = 0;
+			maximumAge = 1000;
 		}
-		Location last = mLocationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+
 		// Check if we can use lastKnownLocation to get a quick reading and use
 		// less battery
-		if (last != null && (System.currentTimeMillis() - last.getTime()) <= maximumAge) {
+		Location last = mLocationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+		if ( !validLocation(last, maximumAge) ){
+			last = mLocationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+		}
+
+		if ( validLocation(last, maximumAge) ) {
 			PluginResult result = new PluginResult(PluginResult.Status.OK, returnLocationJSON(last));
 			callbackContext.sendPluginResult(result);
 		} else {
