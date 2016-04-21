@@ -113,7 +113,7 @@ var GPSLocation = {
 		};
 		var fail = function (e) {
 			// If a fail is received enable network locations again
-			exec(function(status){ console.log(status) }, function(){}, "GPSLocation", "listenToNetworkLocations");
+			exec(function(status){ console.log(status) }, function(){}, "GPSLocation", "listenToNetworkLocations", []);
 			clearTimeout(timeoutTimer.timer);
 			timeoutTimer.timer = null;
 			var err = new PositionError(e.code, e.message);
