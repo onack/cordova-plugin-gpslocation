@@ -17,14 +17,47 @@
 
 package fr.louisbl.cordova.gpslocation;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import android.location.Location;
+
 /**
  * Defines app-wide constants and utilities
  */
 public final class LocationUtils {
 
-	// Debugging tag for the application
-	public static final String APPTAG = "CDVGPSlocationPlugin";
+    public static int PERMISSION_DENIED = 1;
+    public static int POSITION_UNAVAILABLE = 2;
+    public static int TIMEOUT = 3;
+    public static int RESOLUTION_REQUIRED = 4;
 
-	// Create an empty string for initializing strings
-	public static final String EMPTY_STRING = new String();
+    // Debugging tag for the application
+    public static final String APPTAG = "CDVGPSlocationPlugin";
+
+    // Create an empty string for initializing strings
+    public static final String EMPTY_STRING = "";
+
+
+    public static JSONObject returnLocationJSON(Location loc) {
+        JSONObject o = new JSONObject();
+
+        try {
+            o.put("latitude", loc.getLatitude());
+            o.put("longitude", loc.getLongitude());
+            o.put("altitude", (loc.hasAltitude() ? loc.getAltitude() : null));
+            o.put("accuracy", loc.getAccuracy());
+            o.put("heading",
+                    (loc.hasBearing() ? (loc.hasSpeed() ? loc.getBearing()
+                            : null) : null));
+            o.put("velocity", loc.getSpeed());
+            o.put("timestamp", loc.getTime());
+            o.put("provider", loc.getProvider());
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        return o;
+    }
+
 }
