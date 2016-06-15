@@ -119,6 +119,9 @@ public class CordovaGPSLocation extends CordovaPlugin {
 
     public void win(Location loc, CallbackContext callbackContext,
             boolean keepCallback) {
+        if (callbackContext == null) {
+            return;
+        }
         PluginResult result = new PluginResult(PluginResult.Status.OK,
                 LocationUtils.returnLocationJSON(loc));
         result.setKeepCallback(keepCallback);
@@ -140,6 +143,9 @@ public class CordovaGPSLocation extends CordovaPlugin {
      */
     public void fail(int code, String msg, CallbackContext callbackContext,
             boolean keepCallback) {
+        if (callbackContext == null) {
+            return;
+        }
         JSONObject obj = new JSONObject();
         String backup = null;
         try {

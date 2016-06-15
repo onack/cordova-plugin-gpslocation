@@ -18,7 +18,6 @@ import org.apache.cordova.CallbackContext;
 import android.app.Activity;
 import android.app.Dialog;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.content.IntentSender;
 import android.location.Location;
 import android.os.Bundle;
@@ -78,7 +77,7 @@ public class FusedLocationHelper extends Activity implements GoogleApiClient.Con
         buildGoogleApiClient();
         createLocationRequest();
         buildLocationSettingsRequest();
-        mGoogleApiClient.connect();
+        connectGoogleApiClient();
     }
 
     protected synchronized void buildGoogleApiClient() {
@@ -100,6 +99,10 @@ public class FusedLocationHelper extends Activity implements GoogleApiClient.Con
         LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder();
         builder.addLocationRequest(mLocationRequest);
         mLocationSettingsRequest = builder.build();
+    }
+
+    private void connectGoogleApiClient(){
+        mGoogleApiClient.connect();
     }
 
     // region Watches
@@ -149,18 +152,23 @@ public class FusedLocationHelper extends Activity implements GoogleApiClient.Con
 
 
     public void scheduleLocationUpdates(){
-        LocationServices.FusedLocationApi
-                .requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
+        if(mGoogleApiClient.isConnected()){
+            LocationServices.FusedLocationApi
+                    .requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
+        }
     }
 
     public void stopLocationUpdates(){
         watches.clear();
-        LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
+        if (mGoogleApiClient.isConnected()) {
+            LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
+        }
     }
 
     public void getLastAvailableLocation() {
-        Location lastLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
-        if (lastLocation != null) {
+        Location lastLocation;
+        if (mGoogleApiClient.isConnected()) {
+            lastLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
             mPlugin.win(lastLocation);
         } else {
             mPlugin.fail(0,"No location available");
@@ -222,7 +230,7 @@ public class FusedLocationHelper extends Activity implements GoogleApiClient.Con
     public void onConnectionSuspended(int cause) {
         // The connection to Google Play services was lost for some reason. We call connect() to
         // attempt to re-establish the connection.
-        mGoogleApiClient.connect();
+        connectGoogleApiClient();
     }
 
     // endregion
@@ -233,5 +241,3 @@ public class FusedLocationHelper extends Activity implements GoogleApiClient.Con
         win(location);
     }
 }
-
-
