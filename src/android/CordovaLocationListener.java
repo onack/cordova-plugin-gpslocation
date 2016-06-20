@@ -63,7 +63,11 @@ public class CordovaLocationListener implements LocationListener {
 			} else {
 				Log.d(TAG, "Got a NETWORK location");
 			}
-			win(location);
+			if (location == null){
+				fail(POSITION_UNAVAILABLE, "Unable to get a location");
+			} else {
+				win(location);
+			}
 		}
 	}
 
