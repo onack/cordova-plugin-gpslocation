@@ -29,6 +29,10 @@ public class FusedLocationHelper extends Activity implements GoogleApiClient.Con
         GoogleApiClient.OnConnectionFailedListener, ResultCallback<LocationSettingsResult>,
         LocationListener {
 
+    public static int PERMISSION_DENIED = 1;
+    public static int POSITION_UNAVAILABLE = 2;
+    public static int TIMEOUT = 3;
+
     protected static final int REQUEST_CHECK_SETTINGS = 0x1;
     protected static final String TAG = "fusedlocation-plugin";
 
@@ -238,6 +242,10 @@ public class FusedLocationHelper extends Activity implements GoogleApiClient.Con
     @Override
     public void onLocationChanged(Location location) {
         Log.d(TAG, "The location has been updated!");
-        win(location);
+        if (location == null){
+            fail(POSITION_UNAVAILABLE, "Unable to get a location");
+        } else {
+            win(location);
+        }
     }
 }
