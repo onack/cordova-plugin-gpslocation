@@ -160,7 +160,7 @@ public class FusedLocationHelper extends Activity implements GoogleApiClient.Con
             LocationServices.FusedLocationApi
                     .requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
         } else {
-            mPlugin.fail(0, "Can't schedule location updates, not connected yet");
+            mPlugin.fail(0, "Can't schedule location updates, not connected yet", mPlugin.context, true);
         }
     }
 
@@ -171,11 +171,11 @@ public class FusedLocationHelper extends Activity implements GoogleApiClient.Con
         }
     }
 
-    public void getLastAvailableLocation() {
+    public void getLastAvailableLocation(CallbackContext context) {
         Location lastLocation;
         if (mGoogleApiClient.isConnected()) {
             lastLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
-            mPlugin.win(lastLocation);
+            mPlugin.win(lastLocation, context, false);
         } else {
             mPlugin.fail(0, "No location available");
         }
@@ -203,7 +203,7 @@ public class FusedLocationHelper extends Activity implements GoogleApiClient.Con
         switch (status.getStatusCode()) {
             case LocationSettingsStatusCodes.SUCCESS:
                 Log.i(TAG, "All location settings are satisfied.");
-                getLastAvailableLocation();
+                getLastAvailableLocation(mPlugin.context);
                 break;
             case LocationSettingsStatusCodes.RESOLUTION_REQUIRED:
                 Log.i(TAG, "Location settings are not satisfied. Show the user a dialog to" +

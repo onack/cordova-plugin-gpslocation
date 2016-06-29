@@ -195,7 +195,7 @@ public class CordovaGPSLocation extends CordovaPlugin {
 
 
     private void getLastLocation() {
-        mFusedLocationHelper.getLastAvailableLocation();
+        mFusedLocationHelper.getLastAvailableLocation(context);
     }
 
     private void clearWatch(String id) {
