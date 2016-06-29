@@ -175,7 +175,12 @@ public class FusedLocationHelper extends Activity implements GoogleApiClient.Con
         Location lastLocation;
         if (mGoogleApiClient.isConnected()) {
             lastLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
-            mPlugin.win(lastLocation, context, false);
+            if (lastLocation != null) {
+                mPlugin.win(lastLocation, context, false);
+            } else {
+                fail(POSITION_UNAVAILABLE, "Google client connected, but no location available");
+            }
+
         } else {
             mPlugin.fail(0, "No location available");
         }
@@ -252,10 +257,15 @@ public class FusedLocationHelper extends Activity implements GoogleApiClient.Con
     @Override
     public void onLocationChanged(Location location) {
         Log.d(TAG, "The location has been updated!");
+        onNewLocation(location);
+    }
+
+    private void onNewLocation(Location location) {
         if (location == null) {
             fail(POSITION_UNAVAILABLE, "Unable to get a location");
         } else {
             win(location);
         }
+
     }
 }
