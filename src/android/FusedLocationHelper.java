@@ -71,7 +71,7 @@ public class FusedLocationHelper extends Activity implements GoogleApiClient.Con
             if (errorDialog != null) {
                 errorDialog.show();
             } else {
-                mPlugin.fail(status,"checkForGooglePlayServices failed. Error code: " + status);
+                mPlugin.fail(status, "checkForGooglePlayServices failed. Error code: " + status);
             }
         }
     }
@@ -105,7 +105,7 @@ public class FusedLocationHelper extends Activity implements GoogleApiClient.Con
         mLocationSettingsRequest = builder.build();
     }
 
-    private void connectGoogleApiClient(){
+    private void connectGoogleApiClient() {
         mGoogleApiClient.connect();
     }
 
@@ -114,7 +114,7 @@ public class FusedLocationHelper extends Activity implements GoogleApiClient.Con
     public void addWatch(String timerId, CallbackContext callbackContext) {
         watches.put(timerId, callbackContext);
 
-        if (watches.size() == 1) {
+        if (watches.size() > 0) {
             scheduleLocationUpdates();
         }
     }
@@ -155,14 +155,16 @@ public class FusedLocationHelper extends Activity implements GoogleApiClient.Con
     // endregion
 
 
-    public void scheduleLocationUpdates(){
-        if(mGoogleApiClient.isConnected()){
+    public void scheduleLocationUpdates() {
+        if (mGoogleApiClient.isConnected()) {
             LocationServices.FusedLocationApi
                     .requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
+        } else {
+            mPlugin.fail(0, "Can't schedule location updates, not connected yet");
         }
     }
 
-    public void stopLocationUpdates(){
+    public void stopLocationUpdates() {
         watches.clear();
         if (mGoogleApiClient.isConnected()) {
             LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
@@ -175,12 +177,12 @@ public class FusedLocationHelper extends Activity implements GoogleApiClient.Con
             lastLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
             mPlugin.win(lastLocation);
         } else {
-            mPlugin.fail(0,"No location available");
+            mPlugin.fail(0, "No location available");
         }
     }
 
     protected void checkLocationSettings() {
-        if(!showingGooglePlayServicesDialog) {
+        if (!showingGooglePlayServicesDialog) {
             showingGooglePlayServicesDialog = true;
             PendingResult<LocationSettingsResult> result =
                     LocationServices.SettingsApi.checkLocationSettings(
@@ -189,6 +191,10 @@ public class FusedLocationHelper extends Activity implements GoogleApiClient.Con
                     );
             result.setResultCallback(this);
         }
+    }
+
+    private boolean shouldTriggerLocationUpdates() {
+        return watches.size() > 0;
     }
 
     @Override
@@ -208,7 +214,7 @@ public class FusedLocationHelper extends Activity implements GoogleApiClient.Con
                     // in onActivityResult().
                     status.startResolutionForResult(mActivity, REQUEST_CHECK_SETTINGS);
                 } catch (IntentSender.SendIntentException e) {
-                    mPlugin.fail(0,"PendingIntent unable to execute request.");
+                    mPlugin.fail(0, "PendingIntent unable to execute request.");
                 }
                 break;
             case LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE:
@@ -223,11 +229,15 @@ public class FusedLocationHelper extends Activity implements GoogleApiClient.Con
     @Override
     public void onConnected(Bundle connectionHint) {
         checkLocationSettings();
+        if (shouldTriggerLocationUpdates()) {
+            scheduleLocationUpdates();
+        }
     }
 
     @Override
     public void onConnectionFailed(ConnectionResult result) {
-        mPlugin.fail(result.getErrorCode(),"onConnectionFailed. Error code: " + result.getErrorCode());
+        mPlugin.fail(result.getErrorCode(),
+                "onConnectionFailed. Error code: " + result.getErrorCode());
     }
 
     @Override
@@ -242,7 +252,7 @@ public class FusedLocationHelper extends Activity implements GoogleApiClient.Con
     @Override
     public void onLocationChanged(Location location) {
         Log.d(TAG, "The location has been updated!");
-        if (location == null){
+        if (location == null) {
             fail(POSITION_UNAVAILABLE, "Unable to get a location");
         } else {
             win(location);
