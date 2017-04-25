@@ -222,27 +222,4 @@ public class CordovaGPSLocation extends CordovaPlugin {
             context.sendPluginResult(result);
         }
     }
-
-    public boolean hasPermisssion() {
-        for(String p : permissions)
-        {
-            if(!PermissionHelper.hasPermission(this, p))
-            {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    /*
-     * We override this so that we can access the permissions variable, which no longer exists in
-     * the parent class, since we can't initialize it reliably in the constructor!
-     */
-
-    public void requestPermissions(int requestCode)
-    {
-        PermissionHelper.requestPermissions(this, requestCode, permissions);
-    }
-
-
 }
