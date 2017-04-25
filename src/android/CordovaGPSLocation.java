@@ -75,14 +75,11 @@ public class CordovaGPSLocation extends CordovaPlugin {
             final CallbackContext callbackContext) {
         context = callbackContext;
 
-        if (action == null || !action.matches("getPermission|getLocation|addWatch|clearWatch")) {
+        if (action == null || !action.matches("getPermission|getLocation|addWatch|clearWatch|requestPermissions")) {
             return false;
         }
 
-        if(!hasPermisssion()) {
-            PermissionHelper.requestPermissions(this, 0, permissions);
-            return true;
-        } else if (action.equals("getLocation")) {
+        if (action.equals("requestPermissions")) {
             mFusedLocationHelper.checkLocationSettings();
         }
 
