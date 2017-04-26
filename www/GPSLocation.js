@@ -200,6 +200,13 @@ var GPSLocation = {
 			timers[id].timer = false;
 			exec(null, null, "GPSLocation", "clearWatch", [id]);
 		}
+	},
+	/**
+	 * Request the location permissions.
+	 * 
+	 */
+	requestPermissions: function () {
+		exec(null, null, "GPSLocation", "requestPermissions", [])
 	}
 };
 
