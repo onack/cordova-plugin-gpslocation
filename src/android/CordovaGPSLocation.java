@@ -79,6 +79,11 @@ public class CordovaGPSLocation extends CordovaPlugin {
             return false;
         }
 
+        if(!hasPermisssion()) {
+            PermissionHelper.requestPermissions(this, 0, permissions);
+            return true;
+        }
+
         if (action.equals("requestPermissions")) {
             mFusedLocationHelper.checkLocationSettings();
         }
@@ -221,5 +226,26 @@ public class CordovaGPSLocation extends CordovaPlugin {
             result = new PluginResult(PluginResult.Status.OK);
             context.sendPluginResult(result);
         }
+    }
+
+    public boolean hasPermisssion() {
+        for(String p : permissions)
+        {
+            if(!PermissionHelper.hasPermission(this, p))
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /*
+     * We override this so that we can access the permissions variable, which no longer exists in
+     * the parent class, since we can't initialize it reliably in the constructor!
+     */
+
+    public void requestPermissions(int requestCode)
+    {
+        PermissionHelper.requestPermissions(this, requestCode, permissions);
     }
 }
