@@ -276,8 +276,12 @@ public class CordovaGPSLocation extends CordovaPlugin {
     }
 
     public void addGPSWatch(CallbackContext callbackContext) {
-        gpsCallbackContext = callbackContext;
+        addGPSCallback(callbackContext);
         checkGPSStatus();
+    }
+
+    private void addGPSCallback(CallbackContext callbackContext) {
+        gpsCallbackContext = callbackContext;
     }
 
     private void checkGPSStatus() {
