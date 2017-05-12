@@ -22,6 +22,7 @@
 var argscheck = require('cordova/argscheck'),
 	utils = require('cordova/utils'),
 	exec = require('cordova/exec'),
+	cordova = require('cordova'),
 	PositionError = require('./PositionError'),
 	Position = require('./Position');
 
@@ -207,6 +208,16 @@ var GPSLocation = {
 	 */
 	requestPermissions: function () {
 		exec(null, null, "GPSLocation", "requestPermissions", [])
+	},
+
+	addGPSWatch: function () {
+		var successCallback = function() {
+			cordova.fireDocumentEvent("gpson");
+		}
+		var errorCallback = function() {
+			cordova.fireDocumentEvent("gpsoff");
+		}
+		exec(successCallback, errorCallback, "GPSLocation", "addGPSWatch", []);
 	}
 };
 
