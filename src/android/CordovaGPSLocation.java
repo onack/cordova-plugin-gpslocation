@@ -98,7 +98,7 @@ public class CordovaGPSLocation extends CordovaPlugin {
             final CallbackContext callbackContext) {
         context = callbackContext;
 
-        if (action == null || !action.matches("getPermission|getLocation|addWatch|clearWatch|requestPermissions|addGPSWatch|addGPSWatchCallback")) {
+        if (action == null || !action.matches("getPermission|getLocation|addWatch|clearWatch|requestPermissions|addGPSWatch")) {
             return false;
         }
 
