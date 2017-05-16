@@ -31,9 +31,12 @@ import org.json.JSONObject;
 
 import android.Manifest;
 import android.app.Activity;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.location.GpsStatus;
 import android.location.Location;
 import android.location.LocationManager;
 import android.util.Log;
@@ -42,6 +45,8 @@ public class CordovaGPSLocation extends CordovaPlugin {
 
     private LocationManager mLocationManager;
     private FusedLocationHelper mFusedLocationHelper;
+    private CordovaLocationListener mCordovaLocationListener;
+    private CallbackContext gpsCallbackContext = null;
 
     String TAG = "CordovaGPSLocation";
     String [] permissions = { Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION };
@@ -56,7 +61,25 @@ public class CordovaGPSLocation extends CordovaPlugin {
         super.initialize(cordova, webView);
         mLocationManager = (LocationManager) cordova.getActivity().getSystemService(Context.LOCATION_SERVICE);
         mFusedLocationHelper = new FusedLocationHelper(cordova.getActivity(), this);
+        registerGpsProviderChanges(cordova.getActivity());
         cordova.setActivityResultCallback(this);
+    }
+
+    private BroadcastReceiver broadcastGpsChanges = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (gpsCallbackContext != null) {
+                checkGPSStatus();
+            }
+        }
+    };
+
+    private void registerGpsProviderChanges(Context context) {
+        context.registerReceiver(broadcastGpsChanges, new IntentFilter("android.location.PROVIDERS_CHANGED"));
+    }
+
+    private void unregisterGpsProviderChanges(Context context) {
+        context.unregisterReceiver(broadcastGpsChanges);
     }
 
     /**
@@ -75,7 +98,7 @@ public class CordovaGPSLocation extends CordovaPlugin {
             final CallbackContext callbackContext) {
         context = callbackContext;
 
-        if (action == null || !action.matches("getPermission|getLocation|addWatch|clearWatch|requestPermissions")) {
+        if (action == null || !action.matches("getPermission|getLocation|addWatch|clearWatch|requestPermissions|addGPSWatch")) {
             return false;
         }
 
@@ -99,6 +122,8 @@ public class CordovaGPSLocation extends CordovaPlugin {
             getLastLocation();
         } else if (action.equals("addWatch")) {
             addWatch(id, callbackContext);
+        } else if (action.equals("addGPSWatch")) {
+            addGPSWatch(callbackContext);
         }
 
         return true;
@@ -109,6 +134,7 @@ public class CordovaGPSLocation extends CordovaPlugin {
      */
     public void onDestroy() {
         mFusedLocationHelper.stopLocationUpdates();
+        unregisterGpsProviderChanges(cordova.getActivity());
     }
 
     /**
@@ -247,5 +273,25 @@ public class CordovaGPSLocation extends CordovaPlugin {
     public void requestPermissions(int requestCode)
     {
         PermissionHelper.requestPermissions(this, requestCode, permissions);
+    }
+
+    public void addGPSWatch(CallbackContext callbackContext) {
+        addGPSCallback(callbackContext);
+        checkGPSStatus();
+    }
+
+    private void addGPSCallback(CallbackContext callbackContext) {
+        gpsCallbackContext = callbackContext;
+    }
+
+    private void checkGPSStatus() {
+        PluginResult result;
+        if (mLocationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+            result = new PluginResult(PluginResult.Status.OK);
+        } else {
+            result = new PluginResult(PluginResult.Status.ERROR);
+        }
+        result.setKeepCallback(true);
+        gpsCallbackContext.sendPluginResult(result);
     }
 }
