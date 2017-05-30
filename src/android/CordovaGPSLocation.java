@@ -79,7 +79,11 @@ public class CordovaGPSLocation extends CordovaPlugin {
     }
 
     private void unregisterGpsProviderChanges(Context context) {
-        context.unregisterReceiver(broadcastGpsChanges);
+        try {
+            context.unregisterReceiver(broadcastGpsChanges);
+        } catch (IllegalArgumentException e) {
+            Log.e(TAG, e.getMessage());
+        }
     }
 
     /**
