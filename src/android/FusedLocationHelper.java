@@ -233,7 +233,7 @@ public class FusedLocationHelper extends Activity implements GoogleApiClient.Con
     // region Google Play Services Connection Callbacks
     @Override
     public void onConnected(Bundle connectionHint) {
-        checkLocationSettings();
+        // checkLocationSettings();
         if (shouldTriggerLocationUpdates()) {
             scheduleLocationUpdates();
         }
